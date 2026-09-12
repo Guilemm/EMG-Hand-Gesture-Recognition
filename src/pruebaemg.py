@@ -2,17 +2,17 @@ import serial
 import time
 import csv
 
-PORT = "COM4"   # cambia si tu Arduino está en otro puerto, creo que si es el COM4, pero podria no serlo
+PORT = "COM4"
 BAUD = 115200
 
 ser = serial.Serial(PORT, BAUD, timeout=1)
 
-time.sleep(2)   # espera a que Arduino reinicie
+time.sleep(2)
 
 print("Leyendo datos del EMG...")
 
 try:
-    with open("raw1.csv", "w", newline="") as f: #Cambiar nombre del archivo para crear uno nuevo desde cero, para terminar la grabacion hacer control + C en la terminal, pongo la "w", para que se sobreescriba
+    with open("raw1.csv", "w", newline="") as f:
         writer = csv.writer(f)
 
         while True:
@@ -28,4 +28,3 @@ except KeyboardInterrupt:
 finally:
     ser.close()
     print("Puerto serie cerrado correctamente.")
-#Se supone que las medidas que tome se guardaran en la misma carpeta en la que esta este prueba_emg.py        

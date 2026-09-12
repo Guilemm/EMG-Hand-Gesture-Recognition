@@ -7,20 +7,18 @@ from scipy.signal import butter, filtfilt, iirnotch, welch
 def moving_average(signal, N):
     return np.convolve(signal, np.ones(N)/N, mode='same')
 
-#Estos filtros estan a la espera de ser validados por el teacher
-
 def bandpass_filter(signal, fs, lowcut=20, highcut=450, order=4):
     nyq = fs / 2
     b, a = butter(order, [lowcut / nyq, highcut / nyq], btype='band')
     return filtfilt(b, a, signal)
 
-def notch_filter(signal, fs, f0=50, Q=30):#Q=10 es considerablemente agesrivo
+def notch_filter(signal, fs, f0=50, Q=30):
     nyq = fs / 2
     b, a = iirnotch(f0 / nyq, Q)
     return filtfilt(b, a, signal)
 
-FILE = "palma9.46db.csv" #La del pulagr usada fue pulgar9.78db y la del puño fue puno10.32db y palma la de palma9.46db
-FS = 1000  # frecuencia de muestreo fija del Arduino
+FILE = "palma9.46db.csv"
+FS = 1000
 
 df = pd.read_csv(FILE, header=None)
 
@@ -128,20 +126,17 @@ baseline = np.median(raw)
 rectified = np.abs(raw - baseline)
 
 # Suavizado ligero para detección
-smooth = moving_average(rectified, N=int(0.05 * FS))  # 50 ms
+smooth = moving_average(rectified, N=int(0.05 * FS))
 
 # Umbral robusto
-threshold = np.mean(smooth) + 0.3 * np.std(smooth) #Aqui con el 0.3 se ajusta cuánto por encima del ruido necesitas estar
+threshold = np.mean(smooth) + 0.3 * np.std(smooth)
 
 # Máscara de actividad
-active_mask = smooth > threshold #Esto hace que la mascara bianria tenga 0 y uno segun activacion o reposo en terminos del umbral, pero de esta manera hay ceros y unos mexclados, no hay consistencia temporal, por eso luego se aplica media movil de 200 ms sobre esa ventana binaria
+active_mask = smooth > threshold
 
 # Limpiar máscara (eliminar ruido corto)
-mask_smooth = moving_average(active_mask.astype(float), N=int(0.2 * FS)) #Aqui aplico el suavizado con 200 ms, DISTINTO DEL DE 50 MS, la ventana de 200 ms hace: solo considero activación si hay suficiente actividad sostenida en 200 ms (o en los ultimos al estqar centrada)
-mask_smooth = mask_smooth > 0.3 #CON EL ASTYPE(FLOAT) CONVIERTO LA MASCARA BINARIA 0 Y UNOS EN 0.0, 0.0, 1.0..., Y TRAS LA MEDIA MOVIL OBTENGO [0.1, 0.2, 0.6, 0.8, 0.7, 0.5, 0.4, 0.2, 0.1, ...]
-#Lo de mask_smooth es para reconstruir la mascara bianria, pero sin fragmentacion y eliminando detecciones espurias
-#Usar 0.3 en  mask_smooth = mask_smooth > 0.3, hace que lo que en la nueva señal con valores flotantes por encima de 0.3, sea considerado un uno en la mascara binaria reconstruida
-#binaria -> continua -> binaria regularizada
+mask_smooth = moving_average(active_mask.astype(float), N=int(0.2 * FS))
+mask_smooth = mask_smooth > 0.3
 
 # Detectar segmentos
 diff_mask = np.diff(mask_smooth.astype(int))
@@ -170,7 +165,7 @@ print("Segmentos detectados:", len(segments))
 # FUSIONAR SEGMENTOS CERCANOS
 # ============================================
 
-merge_gap = int(0.8 * FS)  # fusionar si el hueco es menor de 800 muestras (al estar con una frecuencia de muiesyreo de 1000 Hz)
+merge_gap = int(0.8 * FS)
 
 merged_segments = []
 if len(segments) > 0:
@@ -252,8 +247,8 @@ def extract_features(segment):
 
 features_list = []
 
-window_size = int(0.2 * FS)   # 200 ms
-step = int(0.1 * FS)          # 50% overlap (son 100 muestras con frecuencia de muestreo de 1000 Hz)
+window_size = int(0.2 * FS)
+step = int(0.1 * FS)
 
 # -------------------------
 # FEATURES DE ACTIVACIÓN
@@ -266,7 +261,7 @@ for rep_id, (s, e) in enumerate(active_segments_trimmed_idx, 1):
         window = seg[start:start + window_size]
         window = window - np.mean(window)
         feat = extract_features(window)
-        feat["label"] = "palma"   # CAMBIA esto según el archivo: palma / pulgar / puno
+        feat["label"] = "palma"
         feat["group"] = f"{FILE}_act_{rep_id}"
         features_list.append(feat)
 
@@ -308,7 +303,7 @@ df_features = df_features[
 # -------------------------
 # GUARDAR EN CSV / EXCEL
 # -------------------------
-df_features.to_csv("palmafeatures.csv", index=False) #CAMBIAR ESTO SEGUN EL QUE GUARDE
+df_features.to_csv("palmafeatures.csv", index=False)
 
 print("\n--- FEATURES EXTRAÍDAS ---")
 print(df_features)
@@ -383,12 +378,10 @@ print(f"SNR raw+notch+bandpass en dB:    {snr_notched_db:.2f} dB")
 # ============================================
 # FOLDING (PROMEDIO DE REPETICIONES) CON MEJOR ALINEADO, AQUI ALINEO REPETICIONES POR EL PICO DE ACTIVACION
 # ============================================
+.
 
-# Usamos smooth para encontrar el pico de activación dentro de cada segmento,
-# pero extraemos la ventana de la señal raw, para que el folding siga siendo sobre raw.
-
-window_before = int(3.5 * FS)   # los ms antes del pico CUANDO GRABE UNA BIEN CON ANCHURA AL FINAL, AUMENTAR EL 2.75 A 3.5 !!!!
-window_after  = int(3.5 * FS)   # los ms después del pico esto es ajustable para ir cogiendo lo de antes, que quede como bonito (Con las zonas previas y posteriores de relajacion)
+window_before = int(3.5 * FS)
+window_after  = int(3.5 * FS)
 window_len = window_before + window_after
 
 segments_equal = []
@@ -426,7 +419,7 @@ segments_matrix = np.array(segments_equal)
 folded_signal = np.mean(segments_matrix, axis=0)
 folded_signal_mV = folded_signal * 5000 / 1023
 
-# Quitar componente DC para que el espectro sea más interpretable. ESTO ES LA PARTE PARA CALCULAR EL PSD (Power density spectrum)
+# Quitar componente DC para que el espectro sea más interpretable
 folded_signal_mV_centered = folded_signal_mV - np.mean(folded_signal_mV)
 
 freqs, psd = welch(
@@ -474,7 +467,6 @@ reps_df.to_csv("aligned_reps_raw.csv", index=False)
 
 print("Repeticiones alineadas guardadas en aligned_reps_raw.csv")
 
-#Esto es solom para visualizarla en mV, pero no guardarla, la que guardo no esta en mV
 
 plt.figure(figsize=(12,4))
 plt.plot(folded_signal_mV)
@@ -537,14 +529,14 @@ filtered_rectified = np.abs(raw_notched_bandpassed)
 filtered_envelope = moving_average(filtered_rectified, N=int(0.05 * FS))
 
 # 2. Reutilizar los mismos parámetros del folding que ya usabas
-window_before_bench = int(2.5 * FS) #LO PONGO DISTINTO A COMO YO LO TENIA, SOLAMENTE PARA LA COMPARACION CON NINAPRO, NO PARA REALIZAR YO LA SEGMENTACION, DECIR QUE ESPERIMENTALMENTE YO HICE TRES SEGUNDOS DE DESCANSO, PERO NINAPRO HACE CINCO
-window_after_bench  = int(2.5 * FS) #Originalmente lo tenia a 3.5, el pearson ha bajado al recortar informacion de la señal, al disminuir el tamaño de la ventana, sin embargo ahora sí es comparable con Ninapro, que tambien usa ventanas de 5 segundos para sus señales
+window_before_bench = int(2.5 * FS)
+window_after_bench  = int(2.5 * FS)
 window_len_bench = window_before_bench + window_after_bench
 
 segments_equal_bench = []
 
 for i, (s, e) in enumerate(active_segments_trimmed_idx, 1):
-    # localizar el pico usando la envolvente filtrada, ASI LO HAGO TAMBIEN EN EL DE NINAPRO
+    # localizar el pico usando la envolvente filtrada
     smooth_seg = filtered_envelope[s:e]
     peak_local = np.argmax(smooth_seg)
     peak_global = s + peak_local
@@ -572,7 +564,7 @@ if len(segments_matrix_bench) > 0:
 
     # 5. Guardar CSV final para NinaPro
     benchmark_df = pd.DataFrame({"emg_filtrado": folded_benchmark_signal})
-    benchmark_df.to_csv("palma_procesado.csv", index=False) #CAMBIAR ESTO SEGUN LO QUE QUIERA GUARDAR
+    benchmark_df.to_csv("palma_procesado.csv", index=False)
 
     print("Señal ideal para NinaPro guardada en pulgar_procesado.csv")
 
@@ -583,7 +575,7 @@ if len(segments_matrix_bench) > 0:
     )
     reps_bench_df.to_csv("pulgar_reps_benchmark.csv", index=False)
 
-    print("Repeticiones benchmark guardadas en puno_reps_benchmark.csv") #esto pone puno, pero sera lo que tenga que ser en cada momento
+    print("Repeticiones benchmark guardadas en puno_reps_benchmark.csv")
 
     # 7. Visualización opcional
     plt.figure(figsize=(12, 5))

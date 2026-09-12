@@ -34,7 +34,7 @@ def notch_filter(signal, fs, f0=50, Q=10):
 def compute_rmse(x, y):
     return np.sqrt(np.mean((x - y) ** 2))
 
-def benchmark_gesto(nombre_gesto, gesture_id, mi_signal, emg, stimulus, restimulus, repetition, FS, idx_plot): #Funcion de Ninapro generalizada a todos los gestos
+def benchmark_gesto(nombre_gesto, gesture_id, mi_signal, emg, stimulus, restimulus, repetition, FS, idx_plot):
     # =========================
     # Buscar mejor canal sin folding
     # =========================
@@ -44,7 +44,7 @@ def benchmark_gesto(nombre_gesto, gesture_id, mi_signal, emg, stimulus, restimul
     best_channel = None
     best_ninapro_norm = None
 
-    mi_norm = normalize_01(mi_signal) #Para normalizar ambas entre 0 y 1, y que por ende sea comparables
+    mi_norm = normalize_01(mi_signal)
 
     for ch in range(signal_gesto.shape[1]):
         ninapro_raw = signal_gesto[:, ch]
@@ -55,7 +55,7 @@ def benchmark_gesto(nombre_gesto, gesture_id, mi_signal, emg, stimulus, restimul
         ninapro_envelope = moving_average(ninapro_rectified, N=int(0.05 * FS))
 
         ninapro_resampled = resample(ninapro_envelope, len(mi_signal))
-        ninapro_norm = normalize_01(ninapro_resampled) #ESTO ES TAMBIEN PARA LA NORMALZIACION
+        ninapro_norm = normalize_01(ninapro_resampled)
 
         r_temp, _ = pearsonr(mi_norm, ninapro_norm)
 
@@ -96,7 +96,7 @@ def benchmark_gesto(nombre_gesto, gesture_id, mi_signal, emg, stimulus, restimul
         seg_rectified = np.abs(seg_bandpassed)
         seg_envelope = moving_average(seg_rectified, N=int(0.05 * FS))
 
-        peak_idx = np.argmax(seg_envelope) #Aqui estoy usando la envolvente filtrada para alinear
+        peak_idx = np.argmax(seg_envelope)
 
         left_len = peak_idx
         right_len = len(seg_envelope) - peak_idx - 1
@@ -126,7 +126,7 @@ def benchmark_gesto(nombre_gesto, gesture_id, mi_signal, emg, stimulus, restimul
         folded_ninapro = np.mean(segments_matrix_nina, axis=0)
         folded_ninapro_resampled = resample(folded_ninapro, len(mi_signal))
 
-        ninapro_folded_norm = normalize_01(folded_ninapro_resampled) #PARA NORMALIZACION ENTRE 0 Y 1
+        ninapro_folded_norm = normalize_01(folded_ninapro_resampled)
 
         r_folded, p_folded = pearsonr(mi_norm, ninapro_folded_norm)
         rmse_folded = compute_rmse(mi_norm, ninapro_folded_norm)
@@ -141,23 +141,8 @@ def benchmark_gesto(nombre_gesto, gesture_id, mi_signal, emg, stimulus, restimul
         #plt.subplot(3,1,idx_plot)
         plt.plot(mi_norm, label=f"Mi señal de {nombre_gesto}")
         plt.plot(ninapro_folded_norm, label=f"NinaPro {nombre_gesto} folded")
-        # Calcular picos, ESTO LO ESTOY HACIEDNO PARA REVISAR QUE ESTA BIEN NORMALIZADO TOdito, CUANDO LO HICE COMPROBE QUE LOS VALORES ESTABAN DENTRO DE UNO Y CERO
-        #idx_peak_mi = np.argmax(mi_norm)
-        #peak_mi = mi_norm[idx_peak_mi]
 
-        #idx_peak_nina = np.argmax(ninapro_folded_norm)
-        #peak_nina = ninapro_folded_norm[idx_peak_nina]
-
-        #print(f"Pico mi señal ({nombre_gesto}): {peak_mi}")
-        #print(f"Pico NinaPro ({nombre_gesto}): {peak_nina}")
-
-        # Marcar en gráfica
-        #plt.scatter(idx_peak_mi, peak_mi)
-        #plt.text(idx_peak_mi, peak_mi, f"{peak_mi:.3f}")
-
-        #plt.scatter(idx_peak_nina, peak_nina)
-        #plt.text(idx_peak_nina, peak_nina, f"{peak_nina:.3f}")
-        plt.ylim(0,1) #Esto es para que solo se vea entre uno y cero
+        plt.ylim(0,1)
         plt.title(f"Comparación morfológica: Mi {nombre_gesto} vs NinaPro")
         plt.xlabel("Muestras")
         plt.ylabel("Amplitud normalizada")
@@ -175,7 +160,6 @@ def benchmark_gesto(nombre_gesto, gesture_id, mi_signal, emg, stimulus, restimul
 
     # gráfica sin folding
     plt.figure(figsize=(12, 5))
-    #plt.subplot(3,1,idx_plot)
     plt.plot(mi_norm, label=f"Mi señal de {nombre_gesto}")
     plt.plot(ninapro_norm, label=f"NinaPro {nombre_gesto} sin folding")
     plt.title(f"Comparación morfológica sin folding: Mi {nombre_gesto} vs NinaPro")
@@ -196,13 +180,10 @@ df_pulgar = pd.read_csv("pulgarfeatures.csv")
 # =========================================================
 # 2. CARGAR TU SEÑAL TEMPORAL DE PUÑO PARA COMPARAR CON NINAPRO, A PARTIR DE AQUI PARA COMPARAR CON NINAPRO
 # =========================================================
-# ESTE ARCHIVO NO ES DE FEATURES
-# Debe contener la señal EMG procesada en el tiempo
-# por ejemplo una columna llamada "emg_filtrado"
+
 
 mi_pulgar_df = pd.read_csv("pulgar_procesado.csv")
 
-# Cambia "emg_filtrado" por el nombre real de tu columna si hace falta
 mi_pulgar = mi_pulgar_df["emg_filtrado"].values
 
 mi_puno_df = pd.read_csv("puno_procesado.csv")
@@ -216,11 +197,7 @@ FS = 1000
 # =========================================================
 # 3. CARGAR ARCHIVO NINAPRO
 # =========================================================
-# Asegúrate de haber descargado un .mat de NinaPro, por ejemplo:
-# S1_A1_E2.mat
-#
-# Debe estar en la misma carpeta que este script
-# o poner la ruta completa
+
 
 data = loadmat("S10_A1_E1.mat") #Dentro del sujeto 10 que cargo aqui, vienen tanto puño, como pulgar como palma
 
@@ -323,10 +300,10 @@ print("\n--- INFORME DE CLASIFICACIÓN ---")
 print(classification_report(y, y_pred))
 
 # ==============================
-# MÉTRICAS POR CLASE Y MACRO-PRECISION, ESTO ES PARA VER ACCURACY DE CADA CLASE POR SEPARADO, PARA NO ESTAR INFLUENCIADO POR LA CALSE NEUTRAL, DE LA CUAL HAY MCUHAS MAS MUESTRAS
+# MÉTRICAS POR CLASE Y MACRO-PRECISION
 # ==============================
 
-#EL PROMEDIO MACRO ES HACER LA MEDIA DE LA PRECISION DE CADA CLASE POR SEPARADO, MIENTRAS QUE LA ACCURACY GLOBAL REPRESENTABA nuˊmero total de predicciones correctas/total de muestras
+
 labels = sorted(y.unique())
 
 precision_por_clase = precision_score(
@@ -387,7 +364,7 @@ print(f"Macro-F1:        {macro_f1:.4f}")
 # IMPORTANCIA DE FEATURES
 # ==============================
 
-modelo.fit(X, y) #Esto de modelo.fit ya no forma parte de la validacion al haber cambiado lo del group K fold, esto ya solo sirve para la ver la importancia de las features
+modelo.fit(X, y)
 
 importancias = modelo.feature_importances_
 

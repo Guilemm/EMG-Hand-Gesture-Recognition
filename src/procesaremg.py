@@ -50,54 +50,6 @@ rectified = np.abs(filtered)
 # Envolvente
 envelope = moving_average(rectified, N=150)
 
-#Conviene hacer antes de esto : envelope_thr = np.where(envelope > threshold, envelope, 0), el calculo del SNR, pues en esa linea se fuerza muchos valores a cero, y falsea bastante los resultados a la hora de calcular el SNR.
-#A la hora de calcular la SNR, hay que tener en cuenta que tenemos que verla en nuestro caso de obtencion de datos, no saldra lo mismo con cinco mediciones de igua tiempo, que con una larga, o dos de diferente duracion...
-
-
-# =========================
-# SNR BASADO EN RMS
-# =========================
-
-#epsilon = 1e-12
-#rms_act_list = [rms(seg) for seg in act_segments if len(seg) > 0]
-#rms_rest_list = [rms(seg) for seg in rest_segments if len(seg) > 0]
-
-#rms_act = np.mean(rms_act_list) if len(rms_act_list) > 0 else 0
-#rms_rest = np.mean(rms_rest_list) if len(rms_rest_list) > 0 else 0
-
-#snr_rms_db = 20 * np.log10((rms_act + epsilon) / (rms_rest + epsilon))
-
-#print("---- SNR RMS global ----")
-#print(f"RMS activación media: {rms_act:.6f}")
-#print(f"RMS reposo media:     {rms_rest:.6f}")
-#print(f"SNR RMS en dB:        {snr_rms_db:.2f} dB")
-
-# =========================
-# SNR SOBRE SEÑAL FOLDED
-# =========================
-
-# folded ya centrado
-#rms_rest = 5.245743 #En realidad este rms deberia SER EL OBTENIDO EN EL SCRIPT DE SEGMENTACION
-
-#rms_folded = rms(centered)
-
-#snr_folded_db = 20 * np.log10((rms_folded + 1e-12) / (rms_rest + 1e-12))
-
-#print("\n---- SNR tras folding ----")
-#print(f"RMS folded: {rms_folded:.6f}")
-#print(f"RMS reposo (de antes): {rms_rest:.6f}")
-#print(f"SNR folded en dB: {snr_folded_db:.2f} dB")
-
-# Threshold
-#threshold = np.mean(envelope) + 0.7*np.std(envelope)
-
-#mask = envelope > threshold
-#mask = moving_average(mask.astype(float), N=200)
-#mask = mask > 0.2
-
-#Esto lo comento para compararlo por el momento
-#envelope_thr = np.where(envelope > threshold, envelope, 0)
-#envelope_thr = moving_average(envelope_thr, N=150)
 
 # =========================
 # SUAVIZADO + NORMALIZACIÓN + REESCALADO, PARA LA VISUALIZACION PRINCIPALMENTE
@@ -215,13 +167,3 @@ plt.ylabel("mV")
 plt.tight_layout()
 plt.show()
 
-#Esto es para guardar el envelope en un .csv aparte, para hacer medias de los gestos
-
-#time = np.arange(len(envelope)) / FS #En el folded no hay n tiempo real en relidad, ya que es un promediado, no la medicion en si
-
-#df_out = pd.DataFrame({
-#    "time": time,
-#    "envelope": envelope
-#})
-
-#df_out.to_csv("fist2new.csv", index=False, header=False)
