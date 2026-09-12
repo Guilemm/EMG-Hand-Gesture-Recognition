@@ -14,10 +14,10 @@ EMG signals are acquired via an Arduino connected over serial (`pyserial`), samp
 
 | File | Purpose |
 |---|---|
-| `pruebaemg.py` | EMG signal acquisition and data logging |
-| `procesaremg.py` | Signal preprocessing, filtering, and quality analysis |
-| `mediagestos.py` | Gesture segmentation, activation detection, and feature extraction |
-| `modeltraining.py` | Machine learning training and evaluation |
+| `emg_recording.py` | EMG signal acquisition and data logging |
+| `emg_processing.py` | Signal preprocessing, filtering, and quality analysis |
+| `gesture_analysis.py` | Gesture segmentation, activation detection, and feature extraction |
+| `model_training.py` | Machine learning training and evaluation |
 
 ## Results
 
