@@ -31,4 +31,4 @@ pip install pandas numpy scipy scikit-learn matplotlib pyserial
 
 ## Documentation
 
-See `ProyectoEMG_Paper.pdf` for the full methodology and results.
+See `ProyectEMG_Paper.pdf` for the full methodology and results.
