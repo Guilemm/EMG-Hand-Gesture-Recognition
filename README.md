@@ -8,7 +8,7 @@ A hand gesture recognition system based on surface electromyography (sEMG) signa
 
 ## Hardware
 
-EMG signals are acquired via an Arduino connected over serial (`pyserial`), sampled at 1000 Hz.
+EMG signals were acquired using a **DFRobot SEN0240 EMG sensor** connected to an **Arduino UNO**, with a sampling frequency of **1000 Hz**.
 
 ## Project Files
 
