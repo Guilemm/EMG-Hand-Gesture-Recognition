@@ -1,29 +1,34 @@
-EMG Hand Gesture Recognition
+# EMG Hand Gesture Recognition
 
-This project implements a hand gesture recognition system based on surface electromyography (sEMG) signals.
+A hand gesture recognition system based on surface electromyography (sEMG) signals. The pipeline acquires EMG signals, preprocesses them, detects muscle activations, extracts relevant features, and classifies hand gestures using machine learning.
 
-The objective is to acquire EMG signals, preprocess them, detect muscle activations, extract relevant features and classify different hand gestures using machine learning techniques.
+**Recognized gestures:** Open Palm · Closed Fist · Thumb Up · Neutral
 
-Recognized gestures:
+**Pipeline:** Acquisition → Preprocessing → Segmentation → Feature Extraction → Classification
 
-Open Palm
+## Hardware
 
-Closed Fist
+EMG signals are acquired via an Arduino connected over serial (`pyserial`), sampled at 1000 Hz.
 
-Thumb Up
+## Project Files
 
-Neutral
+| File | Purpose |
+|---|---|
+| `pruebaemg.py` | EMG signal acquisition and data logging |
+| `procesaremg.py` | Signal preprocessing, filtering, and quality analysis |
+| `mediagestos.py` | Gesture segmentation, activation detection, and feature extraction |
+| `modeltraining.py` | Machine learning training and evaluation |
 
-Processing pipeline:
+## Results
 
-Acquisition → Preprocessing → Segmentation → Feature Extraction → Classification
+Best-performing model: Random Forest classifier, achieving 91%+ macro accuracy across the four recognized gestures.
 
-Project files:
+## Requirements
 
-pruebaemg.py : EMG signal acquisition and data logging
+```bash
+pip install pandas numpy scipy scikit-learn matplotlib pyserial
+```
 
-procesaremg.py : signal preprocessing, filtering and signal quality analysis
+## Documentation
 
-mediagestos.py : gesture segmentation, activation detection and feature extraction
-
-modeltraining.py : machine learning training and evaluation
+See `ProyectoEMG_Paper.pdf` for the full methodology and results.
